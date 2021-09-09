@@ -38,7 +38,7 @@ var rootCmd = &cobra.Command{
 	Long:  `A CLI tool for creating and managing mono-poly repositories, a hybrid that provides the advantages of both Monorepos and Polyrepos`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

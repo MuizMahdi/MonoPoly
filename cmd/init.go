@@ -71,6 +71,7 @@ func createStage(stageName string) {
 
 	// Create Stage directory
 	os.Mkdir(stageName, 0755)
+	os.Mkdir(stageName+"/libs", 0755) // Generate shared libraries folder
 	fmt.Println("Stage directory created")
 
 	// Generate Stage map yaml
@@ -102,7 +103,7 @@ func createStage(stageName string) {
 	fmt.Println(string(gitInitCmdOut))
 
 	// Create .gitignore
-	gitignoreGen := ioutil.WriteFile(stageName+"/.gitignore", []byte{}, 0775)
+	gitignoreGen := ioutil.WriteFile(stageName+"/.gitignore", []byte{}, 0777)
 	if gitignoreGen != nil {
 		fmt.Println(gitignoreGen.Error())
 	}

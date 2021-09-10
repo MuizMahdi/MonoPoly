@@ -86,7 +86,7 @@ func createStage(stageName string) {
 		log.Fatal(marshalErr.Error())
 	}
 
-	writeErr := ioutil.WriteFile("stage.yaml", data, 0777)
+	writeErr := ioutil.WriteFile(stageName+"/stage.yaml", data, 0777)
 	if writeErr != nil {
 		log.Fatal(writeErr.Error())
 	}

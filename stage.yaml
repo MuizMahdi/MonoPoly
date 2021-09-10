@@ -1,0 +1,4 @@
+stage:
+    name: TestApp
+    description: 'Description. TODO: Use flag for description or default'
+    actors: []

@@ -22,7 +22,13 @@ SOFTWARE.
 package cmd
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
+	"log"
+	helpers "monopoly/helpers"
+	"os"
+	"os/exec"
 
 	"github.com/spf13/cobra"
 )
@@ -31,14 +37,15 @@ import (
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long:  ``,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 1 {
+			return errors.New("requires at least one arg")
+		}
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("add called")
+		createActor(args[0])
 	},
 }
 
@@ -54,4 +61,86 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func createActor(actorName string) {
+
+	fmt.Println("Creating Actor...")
+
+	// Create actor's folder
+	os.Mkdir(actorName, 0775)
+
+	// Initialize git repository
+	gitInitCmd := exec.Command("git", "init")
+	gitInitCmd.Dir = actorName
+	gitInitCmdErr := gitInitCmd.Run()
+	if gitInitCmdErr != nil {
+		fmt.Println(gitInitCmdErr.Error())
+	}
+
+	isActorStartIndicatorFound := false
+	isActorEndIndicatorFound := false
+
+	fmt.Println("Reading gitignore...")
+
+	// Read gitignore
+	file, err := os.Open(".gitignore")
+
+	// Handle read errors
+	if err != nil {
+		log.Fatalf("readLines: %s", err)
+	}
+
+	// Close the file
+	defer file.Close()
+
+	// Read lines
+	scanner := bufio.NewScanner(file)
+
+	idx := 0
+
+	fmt.Println("Scanning gitingore lines...")
+
+	// Go through lines
+	for scanner.Scan() {
+
+		// Current line
+		line := scanner.Text()
+
+		fmt.Println("Scanned Line: " + line)
+
+		// If actors start indicator is found
+		if line == helpers.ActorsStartIdicator {
+			isActorStartIndicatorFound = true
+		}
+
+		// Insert new actor if actors end indicator is found
+		if isActorStartIndicatorFound && line == helpers.ActorsEndIdicator {
+
+			fmt.Println("Found the end indicator.")
+			fmt.Println("Adding Actor to above the end indicator...")
+
+			isActorEndIndicatorFound = true
+
+			// Add the new actor in this line
+			err := helpers.InsertStringToFile(".gitignore", actorName+"\n", idx)
+			if err != nil {
+				log.Fatalf(err.Error())
+			}
+
+			fmt.Println("Done!")
+
+			break
+
+		}
+
+		idx++
+	}
+
+	if !isActorStartIndicatorFound && !isActorEndIndicatorFound {
+		helpers.WriteLines([]string{helpers.ActorsStartIdicator, actorName, helpers.ActorsEndIdicator}, ".gitignore")
+	}
+
+	// Update the stage's map with the added actor
+
 }

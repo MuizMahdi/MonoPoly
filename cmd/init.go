@@ -96,11 +96,10 @@ func createStage(stageName string) {
 	// Initialize git repository
 	gitInitCmd := exec.Command("git", "init")
 	gitInitCmd.Dir = stageName
-	gitInitCmdOut, gitInitCmdErr := gitInitCmd.Output()
+	gitInitCmdErr := gitInitCmd.Run()
 	if gitInitCmdErr != nil {
 		fmt.Println(gitInitCmdErr.Error())
 	}
-	fmt.Println(string(gitInitCmdOut))
 
 	// Create .gitignore
 	gitignoreGen := ioutil.WriteFile(stageName+"/.gitignore", []byte{}, 0777)

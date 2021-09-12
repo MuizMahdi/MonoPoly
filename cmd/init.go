@@ -48,26 +48,22 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// fmt.Errorf("invalid color specified: %s", args[0]) // Prints error
+		stageName := args[0]
+		stageDescription, err := cmd.Flags().GetString("description")
+		if err != nil {
+			fmt.Println(err)
+		}
 
-		createStage(args[0])
+		createStage(stageName, stageDescription)
 	},
 }
 
 func init() {
+	initCmd.Flags().StringP("description", "d", "", "A description of your project")
 	stageCmd.AddCommand(initCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// initCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func createStage(stageName string) {
+func createStage(stageName string, stageDescription string) {
 
 	// Create Stage directory
 	os.Mkdir(stageName, 0755)
@@ -75,11 +71,7 @@ func createStage(stageName string) {
 	fmt.Println("Stage directory created")
 
 	// Generate Stage map yaml
-	stageMap := map[string]helpers.Stage{"stage": {
-		stageName,
-		"Description. TODO: Use flag for description or default",
-		[]helpers.Actor{},
-	}}
+	stageMap := map[string]helpers.Stage{"stage": {stageName, stageDescription, []helpers.Actor{}}}
 
 	data, marshalErr := yaml.Marshal(&stageMap)
 	if marshalErr != nil {

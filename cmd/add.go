@@ -25,12 +25,14 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	helpers "monopoly/helpers"
 	"os"
 	"os/exec"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
 // addCmd represents the add command
@@ -45,25 +47,21 @@ var addCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		createActor(args[0])
+		actorName := args[0]
+		actorDescription, err := cmd.Flags().GetString("description")
+		if err != nil {
+			fmt.Println(err)
+		}
+		createActor(actorName, actorDescription)
 	},
 }
 
 func init() {
+	addCmd.Flags().StringP("description", "d", "", "A description of the actor")
 	actorCmd.AddCommand(addCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// addCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func createActor(actorName string) {
+func createActor(actorName string, actorDescription string) {
 
 	fmt.Println("Creating Actor...")
 
@@ -81,8 +79,6 @@ func createActor(actorName string) {
 	isActorStartIndicatorFound := false
 	isActorEndIndicatorFound := false
 
-	fmt.Println("Reading gitignore...")
-
 	// Read gitignore
 	file, err := os.Open(".gitignore")
 
@@ -99,15 +95,11 @@ func createActor(actorName string) {
 
 	idx := 0
 
-	fmt.Println("Scanning gitingore lines...")
-
 	// Go through lines
 	for scanner.Scan() {
 
 		// Current line
 		line := scanner.Text()
-
-		fmt.Println("Scanned Line: " + line)
 
 		// If actors start indicator is found
 		if line == helpers.ActorsStartIdicator {
@@ -117,9 +109,6 @@ func createActor(actorName string) {
 		// Insert new actor if actors end indicator is found
 		if isActorStartIndicatorFound && line == helpers.ActorsEndIdicator {
 
-			fmt.Println("Found the end indicator.")
-			fmt.Println("Adding Actor to above the end indicator...")
-
 			isActorEndIndicatorFound = true
 
 			// Add the new actor in this line
@@ -127,8 +116,6 @@ func createActor(actorName string) {
 			if err != nil {
 				log.Fatalf(err.Error())
 			}
-
-			fmt.Println("Done!")
 
 			break
 
@@ -142,5 +129,38 @@ func createActor(actorName string) {
 	}
 
 	// Update the stage's map with the added actor
+
+	// Read stage map file
+	mapFile, mapReadErr := ioutil.ReadFile("stage.yaml")
+	if mapReadErr != nil {
+		log.Fatal(mapReadErr)
+	}
+
+	// Unmarshal stage map data
+	mapData := make(map[string]helpers.Stage)
+	mapUnmarshalErr := yaml.Unmarshal(mapFile, &mapData)
+	if mapUnmarshalErr != nil {
+		log.Fatal(mapUnmarshalErr)
+	}
+
+	// Add actor to actors in map
+	if entry, ok := mapData["stage"]; ok {
+		entry.Actors = append(entry.Actors, helpers.Actor{actorName, actorDescription})
+		mapData["stage"] = entry
+	}
+
+	// Marshal updated map data
+	data, marshalErr := yaml.Marshal(&mapData)
+	if marshalErr != nil {
+		log.Fatal(marshalErr.Error())
+	}
+
+	// Write updates
+	writeErr := ioutil.WriteFile("stage.yaml", data, 0777)
+	if writeErr != nil {
+		fmt.Println(writeErr.Error())
+	}
+
+	fmt.Println("Actor added!")
 
 }

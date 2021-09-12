@@ -37,9 +37,10 @@ import (
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "A brief description of your command",
-	Long:  ``,
+	Short: "Initializes a new stage with no actors",
+	Long:  `Initializes a new stage, a stage is a workspace that contains actors (modules, subprojects, or microservices)`,
 	Args: func(cmd *cobra.Command, args []string) error {
+
 		if len(args) != 1 {
 			return errors.New("requires at least one arg")
 		}
@@ -47,7 +48,6 @@ var initCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// fmt.Errorf("invalid color specified: %s", args[0]) // Prints error
 		stageName := args[0]
 		stageDescription, err := cmd.Flags().GetString("description")
 		if err != nil {

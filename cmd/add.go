@@ -36,8 +36,8 @@ import (
 // addCmd represents the add command
 var addCmd = &cobra.Command{
 	Use:   "add",
-	Short: "A brief description of your command",
-	Long:  ``,
+	Short: "Adds a new actor to the stage",
+	Long:  `Adds a new actor to the stage, an actor could be a module, subproject, or a microservice that would have its own repository`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return errors.New("requires at least one arg")

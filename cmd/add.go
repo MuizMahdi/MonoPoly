@@ -162,5 +162,4 @@ func createActor(actorName string, actorDescription string) {
 	}
 
 	fmt.Println("Actor added!")
-
 }

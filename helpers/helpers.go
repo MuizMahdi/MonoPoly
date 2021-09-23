@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
+
+	"github.com/manifoldco/promptui"
 )
 
 type Stage struct {
@@ -105,4 +108,16 @@ func InsertStringToFile(path, str string, index int) error {
 	}
 
 	return ioutil.WriteFile(path, []byte(fileContent), 0644)
+}
+
+func PromptYesNoQuestion(question string) bool {
+	prompt := promptui.Select{
+		Label: question + " [Yes/No]",
+		Items: []string{"Yes", "No"},
+	}
+	_, result, err := prompt.Run()
+	if err != nil {
+		log.Fatalf("Prompt failed %v\n", err)
+	}
+	return result == "Yes"
 }

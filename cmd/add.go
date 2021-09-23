@@ -63,7 +63,7 @@ func init() {
 
 func createActor(actorName string, actorDescription string) {
 
-	fmt.Println("Creating Actor...")
+	fmt.Println("Adding " + actorName + " ...")
 
 	// Create actor's folder
 	os.Mkdir(actorName, 0775)
@@ -161,5 +161,5 @@ func createActor(actorName string, actorDescription string) {
 		fmt.Println(writeErr.Error())
 	}
 
-	fmt.Println("Actor added!")
+	fmt.Println("Actor added.")
 }

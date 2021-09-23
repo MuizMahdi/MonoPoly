@@ -22,7 +22,11 @@ SOFTWARE.
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	helpers "monopoly/helpers"
+	"os"
+	"os/exec"
 
 	"github.com/spf13/cobra"
 )
@@ -30,28 +34,62 @@ import (
 // removeCmd represents the remove command
 var removeCmd = &cobra.Command{
 	Use:   "remove",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "",
+	Long:  ``,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 1 {
+			return errors.New("requires at least one arg")
+		}
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("remove called")
+		removeActor(args[0])
 	},
 }
 
 func init() {
 	actorCmd.AddCommand(removeCmd)
+}
 
-	// Here you will define your flags and configuration settings.
+func removeActor(actorName string) {
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// removeCmd.PersistentFlags().String("foo", "", "A help for foo")
+	fmt.Println("Removing " + actorName + " ...")
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// removeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// Check if there're any pending changes inside actor's directory
+	gitStatusCmd := exec.Command("git", "status", "-s")
+	gitStatusCmd.Dir = actorName
+	gitStatusCmdOut, gitStatusCmdErr := gitStatusCmd.Output()
+	if gitStatusCmdErr != nil {
+		fmt.Println(gitStatusCmdErr.Error())
+	}
+
+	if len(gitStatusCmdOut) > 0 { // If there are pending changes
+
+		// Ask user if they still want to delete them
+		if helpers.PromptYesNoQuestion("There are uncommited changes in the directory, are you sure that you want to delete it?") {
+
+			// Delete actor's directory
+			dirRemoveErr := os.RemoveAll(actorName)
+			if dirRemoveErr == nil {
+				// Remove actor from the stage map
+				clearActorMetadata(actorName)
+			}
+
+		} else {
+			return
+		}
+	}
+
+	// Delete actor's directory
+	dirRemoveErr := os.RemoveAll(actorName)
+	if dirRemoveErr == nil {
+		// Remove actor from the stage map
+		clearActorMetadata(actorName)
+	}
+
+	fmt.Println("Actor removed.")
+}
+
+func clearActorMetadata(actorName string) {
+
 }
